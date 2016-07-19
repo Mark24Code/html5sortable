@@ -88,6 +88,7 @@ sortable('.sortable')[0].addEventListener('sortstart', function(e) {
     e.detail.item contains the current dragged element
     e.detail.placeholder contains the placeholder element
     e.detail.startparent contains the element that the dragged item comes from
+    e.detail.index contains the start index of the dragged element (considering only list items)
 
     */
 });
@@ -104,6 +105,11 @@ sortable('.sortable')[0].addEventListener('sortstop', function(e) {
 
     e.detail.item contains the element that was dragged.
     e.detail.startparent contains the element that the dragged item came from.
+    e.detail.index contains the new index of the dragged element (considering only list items)
+    e.detail.oldindex contains the old index of the dragged element (considering only list items)
+    e.detail.elementIndex contains the new index of the dragged element (considering all items within sortable)
+    e.detail.oldElementIndex contains the old index of the dragged element (considering all items within sortable)
+    e.detail.endparent contains the element that the dragged item was added to (new parent)
 
     */
 });
