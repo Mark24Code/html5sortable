@@ -365,7 +365,7 @@ var _html2element = function(html) {
     return html;
   }
   var div = document.createElement('div');
-  div.innerHTML	= html;
+  div.innerHTML = html;
   return div.firstChild;
 };
 /**
@@ -623,8 +623,18 @@ var sortable = function(sortableElements, options) {
           //重载源节点
           sortable(startparent,options);
 
-          //1.执行回调
-          var process_callback = options.transferModel || function(){};
+          //暴露给外部callback
+          function insertTmpl(tmpl){
+              var new_items_length = endparent.children.length;
+              var new_target;
+              if(index == new_items_length){
+                  new_target = endparent.children[new_index-1];
+                  _after(new_target,tmpl);
+              }else{
+                  new_target = endparent.children[index];
+                  _before(new_target,tmpl);
+              }
+          }
           var api_obj = {
               item: item,//当前拖拽元素
               index: index,//新索引(只考虑列表项目)
@@ -634,9 +644,12 @@ var sortable = function(sortableElements, options) {
               startparent: startparent,//拖拽来源
               endparent: endparent,//拖拽放置目标
               before:_before,//内部插入方法 before插入
-              after:_after//内部插入方法，after插入
+              after:_after,//内部插入方法，after插入
+              insertTmpl:insertTmpl//快捷插入原索引方法
           };
+
           //暴露给外部执行函数，可以操纵内部dom
+          var process_callback = options.transferModel || function(){};
           process_callback(api_obj);
 
           //删除占位
