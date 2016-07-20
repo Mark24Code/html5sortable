@@ -442,7 +442,9 @@ var sortable = function(sortableElements, options) {
       disableIEFix: false,
       placeholderClass: 'sortable-placeholder',
       draggingClass: 'sortable-dragging',
-      hoverClass: false
+      hoverClass: false,
+      cloneModel:false,
+      transferModel:undefined//{template:"<div></div>"}
     };
     for (var option in options) {
       result[option] = options[option];
@@ -554,6 +556,24 @@ var sortable = function(sortableElements, options) {
         startparent: startParent,
         index:index
       }));
+
+      //transferModel 模式 ********** start
+      if(options.connectWith && options.transferModel){
+        //index 拖动时索引,startParent 拖动时母,dragging 拖动时对象
+        //clone效果
+        var items_length = startParent.children.length;
+        var target;
+        var dragging_clone = dragging.cloneNode(true);
+        if(items_length == index){
+          target = startParent.children[index-1];
+          _after(target,dragging_clone);
+        }else{
+          target = startParent.children[index];
+          _before(target,dragging_clone);
+        }
+      }
+      //transferModel 模式 ********** end
+
     });
     // Handle drag events on draggable items
     _on(items, 'dragend', function() {
@@ -569,30 +589,65 @@ var sortable = function(sortableElements, options) {
 
       placeholders.forEach(_detach);
       newParent = this.parentElement;
-      _dispatchEventOnConnected(sortableElement, _makeEvent('sortstop', {
-          item: dragging,
-          index: _filter(newParent.children, _data(newParent, 'items'))
-            .indexOf(dragging),
-          oldindex: items.indexOf(dragging),
-          elementIndex: _index(dragging),
-          oldElementIndex: index,
-          startparent: startParent,
-          endparent: newParent
-      }));
+
+      var item = dragging;
+      var index = _filter(newParent.children, _data(newParent, 'items')).indexOf(dragging);
+      var oldindex = items.indexOf(dragging);
+      var elementIndex =  _index(dragging);
+      var oldElementIndex = _index(dragging);
+      var startparent = startParent;
+      var endparent = newParent;
+      //dragend事件,内部public接口属性
+      var args = {
+        item: item,
+        index: index,
+        oldindex: oldindex,
+        elementIndex: elementIndex,
+        oldElementIndex: oldElementIndex,
+        startparent: startparent,
+        endparent: endparent
+      };
+      _dispatchEventOnConnected(sortableElement, _makeEvent('sortstop', args));
       if (index !== _index(dragging) || startParent !== newParent) {
-        _dispatchEventOnConnected(sortableElement, _makeEvent('sortupdate', {
-          item: dragging,
-          index: _filter(newParent.children, _data(newParent, 'items'))
-            .indexOf(dragging),
-          oldindex: items.indexOf(dragging),
-          elementIndex: _index(dragging),
-          oldElementIndex: index,
-          startparent: startParent,
-          endparent: newParent
-        }));
+
+        _dispatchEventOnConnected(sortableElement, _makeEvent('sortupdate', args));
+
+        }
+       //transferModel 模式 ********** start
+      if(options.connectWith && options.transferModel){
+          //去重
+          if(startparent==endparent){
+            var delete_node = startparent.children[oldindex];
+            startparent.removeChild(delete_node);
+          }
+          //重载源节点
+          sortable(startparent,options);
+
+          //1.执行回调
+          var process_callback = options.transferModel || function(){};
+          var api_obj = {
+              item: item,//当前拖拽元素
+              index: index,//新索引(只考虑列表项目)
+              oldindex: oldindex,//原索引(只考虑列表项目)
+              elementIndex: elementIndex,//新索引(sortable项目)
+              oldElementIndex: oldElementIndex,//老索引(sortable项目)
+              startparent: startparent,//拖拽来源
+              endparent: endparent,//拖拽放置目标
+              before:_before,//内部插入方法 before插入
+              after:_after//内部插入方法，after插入
+          };
+          //暴露给外部执行函数，可以操纵内部dom
+          process_callback(api_obj);
+
+          //删除占位
+          endparent.removeChild(item);
+
       }
+      //transferModel 模式 ********** end
       dragging = null;
       draggingHeight = null;
+
+
     });
     // Handle drop event on sortable & placeholder
     // TODO: REMOVE placeholder?????
