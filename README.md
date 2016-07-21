@@ -217,6 +217,39 @@ cloneModel可以做一些处理,装好插入模板。传给 ```api_obj.insertTmp
 
   就可以出现 影分身效果。
 
+例子：
+
+配置了一个sortable对象
+
+cloneModel开启克隆模式
+
+内部自定义了，copy拖拽目标属性的功能
+
+``` javascript
+  sortable('.testbox',{
+      connectWith:'cf',
+      placeholderClass:'addModule',
+      placeholder:"<div>占位效果</div>",
+      forcePlaceholderSize: true,
+      cloneModel:function(api_obj){
+          //1.准备模板
+          var text = api_obj.item.innerText;
+          var tmpl = "<div><span>"+text+"</span></div>";
+          var tmplE = document.createElement('div');
+          tmplE.innerHTML = tmpl;
+          tmpl = tmplE.childNodes[0];
+          //2.属性交换
+          var attr = "cid";
+          var attr_val = api_obj.item.getAttribute(attr) || "";
+          if(attr){
+            tmpl.setAttribute(attr,attr_val);
+          }
+          //3.插入
+          api_obj.insertTmpl(tmpl);
+        }
+
+  });
+```
 
 ### hoverClass
 Use `hoverClass` option to specify applying a css class to the hovered element rather than relying on `:hover`. This can eliminate some potential drag and drop issues where another element thinks it is being hovered over.
