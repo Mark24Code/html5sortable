@@ -182,6 +182,41 @@ sortable('.sortable', {
   placeholder: '<tr><td colspan="7">&nbsp;</td></tr>'
 });
 ```
+### cloneModel
+
+cloneModel期望是一个函数,接受 api_obj 对象
+
+``` javascript
+  var api_obj = {
+      item: item, //当前拖拽元素
+      index: index, //新索引(只考虑列表项目)
+      oldindex: oldindex, //原索引(只考虑列表项目)
+      elementIndex: elementIndex, //新索引(sortable项目)
+      oldElementIndex: oldElementIndex, //老索引(sortable项目)
+      startparent: startparent, //拖拽来源
+      endparent: endparent, //拖拽放置目标
+      before: _before, //内部插入方法 before插入
+      after: _after, //内部插入方法，after插入
+      insertTmpl: insertTmpl //快捷插入原索引方法
+  };
+```
+api_obj是一个内部提供的对象接口,在这里可以操纵内部的元素，来实现自定义效果。
+
+使用方式：
+cloneModel与ConnectWith同时存在值得时候，将会进入 cloneModel 模式。
+
+cloneModel可以做一些处理,装好插入模板。传给 ```api_obj.insertTmpl(tmpl)```,这样，当拖拽对象拖拽到关联的目标区域，就会插入,自定义的tmpl。
+
+展示效果:
+
+1. 复制效果：点击拖拽时,在源区域,会产生一个对象以及占位，拖拽对象将会以克隆的效果移动到目标区域,用户松开鼠标，放置对象，将会以用户自定义的tmpl插入目标。
+
+2. 影分身效果：如果不希望拖动来源展示 拖拽对象，可以在来源区域，需要设置：
+  + 使用绝对定位，布局来源区域的拖拽元素
+  + 设置来源区域的```holderplaceClass```的CSS样式为：```display:None```
+
+  就可以出现 影分身效果。
+
 
 ### hoverClass
 Use `hoverClass` option to specify applying a css class to the hovered element rather than relying on `:hover`. This can eliminate some potential drag and drop issues where another element thinks it is being hovered over.
